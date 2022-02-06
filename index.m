@@ -8,10 +8,19 @@ map= binaryOccupancyMap(map)
 
 finish = [90 160; 90 170];
 
-checkPoints = [120 160; 120 170; 
+checkpoints = [120 160; 120 170;
+               158 158; 158 168;
+               158 140; 168 140;
                158 110; 168 110; 
-               80 108; 84 104;
-               40 120; 50 120]
+               142 116; 142 126;
+               110 118; 110 128;
+               78 108; 84 104;
+               58 68; 68 68;
+               40 75; 50 75;
+               40 115; 50 115;
+               40 154; 50 154];
+
+numChpts = length(checkpoints);
 
 % initial positions
 xCar = 100;
@@ -27,6 +36,7 @@ angle = pi/4;
 
 % define the vehicle
 viz = Visualizer2D;
+%% 
 viz.robotRadius = 1;
 
 viz.showTrajectory = false;
@@ -39,10 +49,10 @@ lidar.scanAngles = linspace(-pi/2,pi/2, 10); % 10 scanned angles
 lidar.maxRange = maxRange; % maximum range of a lidar sensor in [meters]
 attachLidarSensor(viz,lidar);
 tic
-ranges = lidar(pose);
+input = lidar(pose);
 toc
 
-viz(pose, ranges)
+viz(pose, input)
 
 hold on
 
@@ -50,9 +60,9 @@ hold on
 % 
 % % plot checkpoints
 i = -1;
-while i ~= length(checkPoints)-1
+while i ~= length(checkpoints)-1
     i = i + 2;
-    plot(checkPoints(i:i+1,1), checkPoints(i:i+1,2), 'b', 'LineWidth', 3);
+    plot(checkpoints(i:i+1,1), checkpoints(i:i+1,2), 'b', 'LineWidth', 3);
 end
 % title('Map with vehicle')
 
@@ -88,7 +98,18 @@ space1=space(2,:)/10;  % rozsah lokalnej mutacie 1
 space2=space(2,:)/100; % rozsah lokalnej mutacie 2
 space3=space(2,:)/1000;
 
+spaceBest = floor(popSize * 0.2);
+spaceBest2 = floor(popSize * 0.15);
+spaceMut1 = floor(popSize * 0.3);
+spaceRand = floor(popSize * 0.2);
 
+checkSize = spaceBest + 2 * spaceBest2 + spaceMut1 + spaceRand;
+
+if checkSize < popSize
+    spaceRand = spaceRand + (popSize - checkSize);
+end
+
+%% 
 pop = genrpop(popSize, space);
 
 car = pop(1,:);
@@ -97,6 +118,9 @@ fit = zeros(popSize, 1);
 poses = zeros(popSize, 1000, 3);
 fitGen = zeros(gens, 1);
 
+nnDet = {params; hiddenLayer};
+cmDet = {map; lidar; pose; input; maxRange; checkpoints; numChpts; mapSize}; % car and map details
+
 for i = 1:gens
 
     if mod(i, 1) == 0
@@ -104,38 +128,48 @@ for i = 1:gens
     end
     
     parfor j = 1:popSize
-        [fit(j), poses(j,:,:)] = fitnessVehicle(pop(j, :), hiddenLayer, params, map, lidar, pose, maxRange, ranges, i);
+        [fit(j), poses(j,:,:)] = fitnessVehicle(pop(j, :), nnDet, cmDet);
     end
     
-    % selekcia
-    best = selbest(pop, -fit, [25 10]);
-    work1 = selbest(pop, -fit, 20);
-    work2 = seltourn(pop, -fit, 20);
-    work3 = selrand(pop, -fit, 25);
+    best = selbest(pop, fit, [spaceBest spaceBest2]);
+    work1 = selbest(pop, fit, spaceBest2);
+    work2 = seltourn(pop, fit, spaceMut1);
+    work3 = selrand(pop, fit, spaceRand);
 
     % krizenie
-    work1 = intmedx(work1, 0.25);
+    work1 = intmedx(work1, 0.2);
 
     % mutacie
     work2 = mutx(work2, 0.1, space);
-    work3 = muta(work3, 0.1, (space/10), space);
+    work3 = muta(work3, 0.1, space2, space);
 
     % nova populacia
     pop = [best; work1; work2; work3];
     
-    fitGen = min(fit);
+    fitGen(i) = min(fit);
     
 end
 
 %%
-posesToSim = [poses(popSize,:,1)' poses(popSize, :, 2)' poses(popSize, :, 3)'];
+[~,pp] = min(fit);
+
+% pp = 24;
+posesToSim = [poses(pp,:,1)' poses(pp, :, 2)' poses(pp, :, 3)'];
 posesToSim = posesToSim(~all(posesToSim == 0, 2),:);
+pause(1)
 for i = 1:length(posesToSim)
     pose = posesToSim(i,:,:)';
     ranges = lidar(pose);
     viz(pose, ranges)
-    pause(0.25)
+    pause(0.05)
 end
+
+%%
+figure()
+generations = 1:1:gens;
+plot(generations, fitGen)
+
+
 
 
 
