@@ -37,8 +37,8 @@ function [fit, poses] = fitnessVehicle(pop, nnDet, cmDet)
 
         [fit, chptReached] = checkpointsCheck(checkpoints, chptReached, pose, fit);
         
-        if currentStep > 5
-            fit = checkStuck(poses(currentStep - 5: currentStep, 1:2, :), fit);
+        if currentStep > 11
+            fit = checkStuck(poses(currentStep - 10: currentStep, 1:2, :), fit);
         end
 
         if currentPosition ~= 0

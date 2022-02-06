@@ -140,8 +140,8 @@ for i = 1:gens
     work1 = intmedx(work1, 0.2);
 
     % mutacie
-    work2 = mutx(work2, 0.1, space);
-    work3 = muta(work3, 0.1, space2, space);
+    work2 = mutx(work2, 0.5, space);
+    work3 = muta(work3, 0.3, space2, space);
 
     % nova populacia
     pop = [best; work1; work2; work3];
@@ -153,7 +153,7 @@ end
 %%
 [~,pp] = min(fit);
 
-% pp = 24;
+pp = 1;
 posesToSim = [poses(pp,:,1)' poses(pp, :, 2)' poses(pp, :, 3)'];
 posesToSim = posesToSim(~all(posesToSim == 0, 2),:);
 pause(1)

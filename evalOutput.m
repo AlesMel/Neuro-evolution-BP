@@ -7,6 +7,6 @@ function [out] = evalOutput(W1, W2, W3, B1, B2, input, maxRange)
     A2 = (W2*O1) + B2;
     O2 = tanh(A2 * 1);
     out = W3 * O2;
-    out = out * (2*pi); % shifted output to output angle in radians
+    out = out * (pi/2); % shifted output to output angle in radians
 
 end
