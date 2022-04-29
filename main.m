@@ -8,7 +8,7 @@ figure('Position', [100, 100, 800, 500]);
 
 variant = 3;
 scale = 1;
-sensorMode = 1;
+sensorMode = 2;
 %% 
 
 path = "D:\FEI-STU\BAKALARSKA_PRACA\CIRCUITS\";
@@ -78,7 +78,7 @@ switch variant
                        311 311 343 343 311, 218 208 208 218 218;
                        311 311 343 343 311, 158 148 148 158 158;];
     case 4
-        img = path+"bigMap2.png";
+        img = path+"bigMap3.png";
         xCar = 190 * scale;
         yCar = 55 * scale;
         angle = pi/2;
@@ -251,7 +251,7 @@ checkpoints = [220 230 230 220 220,  73 73 41 41 73;
                298 298 330 330 298, 190 200 200 190 190;
                248 238 238 248 248, 234 234 202 202 234];
 xCar = 190 * scale;
-yCar = 55 * scale;
+yCar = 45 * scale;
 angle = pi/2;
 testMap = Map(img, scale, checkpoints, finish, maxSteps);
 step = 0;
