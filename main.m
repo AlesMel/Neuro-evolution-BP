@@ -11,7 +11,7 @@ scale = 1;
 sensorMode = 2;
 %% 
 
-path = "D:\FEI-STU\BAKALARSKA_PRACA\CIRCUITS\";
+path = "CIRCUITS\";
 switch variant
     case 1
         img = path+"O.png";
@@ -257,7 +257,7 @@ testMap = Map(img, scale, checkpoints, finish, maxSteps);
 step = 0;
 
 popIndex = 2;
-geneIndex = 5;
+geneIndex = 1;
 % load("NNCameraMap03Trained06Camera.mat");
 [nn, weights] = nn.convertWeights(popIndex, geneIndex);
 car = Car(xCar, yCar, angle, testMap, sensorMode);
