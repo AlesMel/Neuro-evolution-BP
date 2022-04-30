@@ -224,8 +224,8 @@ classdef Car
             centers = centers + obj.carCenter;
             angle = obj.headingAngle + obj.steerAngle;
             if ~isempty(obj.map)
-%                 show(obj.map)
-                imshow(obj.mapObject.image);
+                 show(obj.map)
+%                 imshow(obj.mapObject.image);
                 hold on
                 obj.mapObject.drawCheckpoints();
                 obj.mapObject.drawFinish();

@@ -6,9 +6,9 @@ clear
 %%
 figure('Position', [100, 100, 800, 500]);
 
-variant = 3;
+variant = 4;
 scale = 1;
-sensorMode = 2;
+sensorMode = 3;
 %% 
 
 path = "CIRCUITS\";
@@ -79,22 +79,31 @@ switch variant
                        311 311 343 343 311, 158 148 148 158 158;];
     case 4
         img = path+"bigMap3.png";
-        xCar = 190 * scale;
-        yCar = 55 * scale;
-        angle = pi/2;
-        maxSteps = round(700 * scale);
+        xCar = 200 * scale;
+        yCar = 47 * scale;
+        angle = pi/4;
+        maxSteps = round(1000 * scale);
         finish = [330 340 340 330 330, 340 340 372 372 340] / scale;
         checkpoints = [220 230 230 220 220,  73 73 41 41 73;
                        237 237 269 269 237, 120 130 130 120 120;
                        298 298 330 330 298, 190 200 200 190 190;
-                       248 238 238 248 248, 234 234 202 202 234];
+                       248 238 238 248 248, 234 234 202 202 234;
+                       188 178 178 188 188, 234 234 202 202 234;
+                       117 117 149 149 117, 200 190 190 200 200;
+                       117 117 149 149 117, 140 130 130 140 140;
+                       69 69 101 101 69, 130 140 140 130 130;
+                       69 69 101 101 69, 190 200 200 190 190;
+                       69 69 101 101 69, 250 260 260 250 250;
+                       133 133 165 165 133, 308 318 318 308 308;
+                       205 215 205 195 205, 365 363 331 334 365;
+                       245 255 255 245 245, 313 313 281 281 313;];
 end
 
 map = Map(img, scale, checkpoints, finish, maxSteps);
 car = Car(xCar, yCar, angle, map, sensorMode);
 
-nn = NN([100 100 45], [10 6 6 2], 2);
-
+nn = NN([100 100 45], [20 6 6 2], 2);
+show(map.map)
 car.drawCar();
 %% 
 fit1 = nn.fits.fit1;
@@ -119,9 +128,15 @@ space3 = space/500;
 
 gens = 999;
 
-fitS1 = cell(gens, 5);
-fitS2 = cell(gens, 5);
-fitS3 = cell(gens, 5);
+fitParametersCount = 7;
+
+fitS1temp = zeros(nn.populationSizes(1), fitParametersCount);
+fitS2temp = zeros(nn.populationSizes(2), fitParametersCount);
+fitS3temp = zeros(nn.populationSizes(1), fitParametersCount);
+
+fitS1 = zeros(gens, fitParametersCount);
+fitS2 = zeros(gens, fitParametersCount);
+fitS3 = zeros(gens, fitParametersCount);
 
 fitTrend1 = zeros(gens, 1);
 fitTrend2 = zeros(gens, 1);
@@ -137,15 +152,15 @@ for i = 1:gens
     end
 
     parfor j = 1:nn.populationSizes(1,1)
-        [fit1(j), checkpointsReached1(j), ~] = fitness(nn, map, car, 1, j);
+        [fit1(j), checkpointsReached1(j), fitS1temp(j,:)] = fitness(nn, map, car, 1, j);
     end
     
     parfor j = 1:nn.populationSizes(1,2)
-        [fit2(j), checkpointsReached2(j), ~] = fitness(nn, map, car, 2, j);
+        [fit2(j), checkpointsReached2(j), fitS2temp(j,:)] = fitness(nn, map, car, 2, j);
     end
 
     parfor j = 1:nn.populationSizes(1,3)
-        [fit3(j), checkpointsReached3(j), ~] = fitness(nn, map, car, 3, j);
+        [fit3(j), checkpointsReached3(j), fitS3temp(j,:)] = fitness(nn, map, car, 3, j);
     end
 
     nn.fits.fit1 = fit1;
@@ -224,16 +239,25 @@ for i = 1:gens
         [nn, pop2] = nn.resetPop(2); % resetuje pop
     end
 
-    maxCheckpointsReached1 = max(checkpointsReached1);
-    maxCheckpointsReached2 = max(checkpointsReached2);
-    maxCheckpointsReached3 = max(checkpointsReached3);
+%     maxCheckpointsReached1 = max(checkpointsReached1);
+%     maxCheckpointsReached2 = max(checkpointsReached2);
+%     maxCheckpointsReached3 = max(checkpointsReached3);
     
     nn = nn.fitTrendInsert(1, i, min(fit1));
     nn = nn.fitTrendInsert(2, i, min(fit2));
     nn = nn.fitTrendInsert(3, i, min(fit3));
-%     fitTrend1(i) = min(fit1);
-%     fitTrend2(i) = min(fit2);
-%     fitTrend3(i) = min(fit3);
+
+    [~, index] = min(fit1);
+    [~, index2] = min(fit2);
+    [~, index3] = min(fit3);
+
+    fitS1(i, :) = fitS1temp(index, :);
+    fitS2(i, :) = fitS2temp(index2, :);
+    fitS3(i, :) = fitS3temp(index3, :);
+
+    maxCheckpointsReached1 = checkpointsReached1(index);
+    maxCheckpointsReached2 = checkpointsReached2(index2);
+    maxCheckpointsReached3 = checkpointsReached3(index3);
 
     fprintf("------------ Checkpoints reached:\n")
     cprintf('red'," 1. island: %d  \n", maxCheckpointsReached1)

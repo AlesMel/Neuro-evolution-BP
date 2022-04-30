@@ -20,13 +20,13 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
 
         if map.checkFinish(pose) && chpNum == checkpointsReached
 %             fitFinish = -1e6;
-            fitFinish = -10e5;
+            fitFinish = -1e4;
             break;
         end
         [sensorReadings, cameraReadings] = car.getSensorReadings();
         
         if ~car.checkInsidePosition(pose)
-            fitInside = 100e5;
+            fitInside = inf;
 %             fitInside = 1e9;
             break;
         end
@@ -46,11 +46,11 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
         switch map.checkCheckpoints(pose, checkpointsReached)
             case 1 % reached the correct checkpoint
 %                 fit = fit - 1e2;
-                fitChpt = fitChpt - 5e3;
+                fitChpt = fitChpt - 1e2;
                 checkpointsReached = checkpointsReached + 1;
             case 2 % reached wrong checkpoint
 %                 fit = fit + 0.5e2;
-                fitChpt = fitChpt + 1e2;
+                fitChpt = fitChpt + 0.1e2;
         end
 
         checkpointsRemaining = map.checkpointCount - checkpointsReached;
@@ -60,16 +60,17 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
 %         car.drawCar();
 
         if currentPosition ~= 0
-            fitPose = fitPose + 3e2;
+            fitPose = fitPose + 1e2;
 %             fitPose = fitPose + 1e3;   
 %             break;
         end
     end
     format long
  
-    fit = fit + (step + fitPose + fitInside) * (checkpointsRemaining+2) + fitChpt + fitFinish;
+%     fit = step * (checkpointsRemaining+2) + fitPose + fitInside + fitChpt + fitFinish;
+      fit = (step + fitPose + fitInside) / (checkpointsReached+1) + fitChpt + fitFinish;
 %     fit = (step + fitPose + fitInside) / (checkpointsReached+1) + fitChpt + fitFinish;
 
-    fitSep =  [fitPose, step, fitChpt, fitFinish, fitInside];
+    fitSep =  [fitPose, step, fitChpt, fitFinish, fitInside, fit, checkpointsReached];
 end
 

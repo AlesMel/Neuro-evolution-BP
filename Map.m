@@ -94,7 +94,6 @@ classdef Map
         end
 
         function [checkpointSol] = checkCheckpoints(obj, pose, checkpointsReached)
-
             PX = pose(1);
             PY = pose(2);
             checkpointSol = 0;
