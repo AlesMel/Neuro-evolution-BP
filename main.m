@@ -6,9 +6,9 @@ clear
 %%
 figure('Position', [100, 100, 800, 500]);
 
-variant = 4;
+variant = 3;
 scale = 1;
-sensorMode = 3;
+sensorMode = 1;
 %% 
 
 path = "CIRCUITS\";
@@ -79,9 +79,9 @@ switch variant
                        311 311 343 343 311, 158 148 148 158 158;];
     case 4
         img = path+"bigMap3.png";
-        xCar = 200 * scale;
-        yCar = 47 * scale;
-        angle = pi/4;
+        xCar = 190 * scale;
+        yCar = 50 * scale;
+        angle = pi/2;
         maxSteps = round(1000 * scale);
         finish = [330 340 340 330 330, 340 340 372 372 340] / scale;
         checkpoints = [220 230 230 220 220,  73 73 41 41 73;
@@ -102,7 +102,7 @@ end
 map = Map(img, scale, checkpoints, finish, maxSteps);
 car = Car(xCar, yCar, angle, map, sensorMode);
 
-nn = NN([100 100 45], [20 6 6 2], 2);
+nn = NN([100 100 45], [10 6 6 2], 2);
 show(map.map)
 car.drawCar();
 %% 
@@ -126,7 +126,7 @@ space1 = space/5;
 space2 = space/50;
 space3 = space/500;
 
-gens = 999;
+gens = 199;
 
 fitParametersCount = 7;
 
@@ -182,6 +182,12 @@ for i = 1:gens
     work4a_1 = selsus(pop1, fit1, 10);
     work4b_1 = selsus(pop1, dFit1, 10);
     work4_1 = [work4a_1; work4b_1; best_1];
+
+    work1_1 = crossov(work1_1, 4, 0);
+    work2_1 = mutx(work2_1, 0.2, space);
+    work3_1 = muta(work3_1, 0.15, space2, space);
+    work4_1 = muta(work4_1, 0.18, space3, space);
+
     pop1 = [best_1; work1_1; work2_1; work3_1; work4_1; old_1];
 
      % GA - 2. Island - pop will be reset
@@ -203,14 +209,14 @@ for i = 1:gens
     work4b_2 = selsus(pop1, dFit2, 10);
     work4_2 = [work4a_2; work4b_2; best_2];
 
-    work1_2 = intmedx(work1_2, 0.4);
-    work2_2 = mutx(work2_2, 0.1, space);
+    work1_2 = intmedx(work1_2, 0.5);
+    work2_2 = mutx(work2_2, 0.15, space);
     work3_2 = muta(work3_2, 0.1, space2, space);
-    work4_2 = muta(work4_2, 0.1, space3, space);
+    work4_2 = muta(work4_2, 0.15, space3, space);
     pop2 = [best_2; work1_2; work2_2; work3_2; work4_2; old_2];
 
     % GA - 3. Island - the best ones
-    best_3 = selbest(pop3, fit3, [1,1,1,1,1]);
+    best_3 = selbest(pop3, fit3, [2, 1, 1, 1]);
     work_3 = selbest(pop3, fit3, [1,1,1,1,1,1,1,1,1,1]);
 
     work1_3 = muta1(work_3, space2, space);
@@ -224,7 +230,7 @@ for i = 1:gens
     nn = nn.updatePop(3, pop3);
 
     % migracia z ostrova 1 do ostrova 2, z ostrova 3 do 1, zahrievanie ostrova 1,
-    if mod(i, 200)==0
+    if mod(i, 100)==0
         pop3(10, :) = pop1(1,:);  % migracia z Pop_1 do Pop_3
         pop3(11, :) = pop2(1,:);  % migracia z Pop_2 do Pop_3
         pop2(10, :) = pop1(1,:);
@@ -243,7 +249,7 @@ for i = 1:gens
 %     maxCheckpointsReached2 = max(checkpointsReached2);
 %     maxCheckpointsReached3 = max(checkpointsReached3);
     
-    nn = nn.fitTrendInsert(1, i, min(fit1));
+        nn = nn.fitTrendInsert(1, i, min(fit1));
     nn = nn.fitTrendInsert(2, i, min(fit2));
     nn = nn.fitTrendInsert(3, i, min(fit3));
 
@@ -266,17 +272,28 @@ for i = 1:gens
 end
 
 
-%%         
+%%     
+clear xs ys;
 figure('Position', [100, 100, 800, 500]);
 img = path+"bigMap3.png";
+xCar = 206 * scale;
+yCar = 53 * scale;
+angle = pi/5;
+maxSteps = round(1000 * scale);
 finish = [330 340 340 330 330, 340 340 372 372 340] / scale;
 checkpoints = [220 230 230 220 220,  73 73 41 41 73;
                237 237 269 269 237, 120 130 130 120 120;
                298 298 330 330 298, 190 200 200 190 190;
-               248 238 238 248 248, 234 234 202 202 234];
-xCar = 190 * scale;
-yCar = 45 * scale;
-angle = pi/2;
+               248 238 238 248 248, 234 234 202 202 234;
+               188 178 178 188 188, 234 234 202 202 234;
+               117 117 149 149 117, 200 190 190 200 200;
+               117 117 149 149 117, 140 130 130 140 140;
+               69 69 101 101 69, 130 140 140 130 130;
+               69 69 101 101 69, 190 200 200 190 190;
+               69 69 101 101 69, 250 260 260 250 250;
+               133 133 165 165 133, 308 318 318 308 308;
+               205 215 205 195 205, 365 363 331 334 365;
+               245 255 255 245 245, 313 313 281 281 313;];
 testMap = Map(img, scale, checkpoints, finish, maxSteps);
 step = 0;
 
@@ -304,7 +321,7 @@ while step < maxSteps && ~testMap.checkFinish(car.carPosition)
     step = step + 1;
     xs(step) = car.carPosition(1);
     ys(step) = car.carPosition(1,2);
-    speeds(step) = car.speed;
+    speeds(step) = car.speed * car.dt;
 end
 
 show(testMap.map)

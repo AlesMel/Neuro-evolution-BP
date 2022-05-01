@@ -3,7 +3,7 @@ classdef Car
     %   Detailed explanation goes here
     properties
         speed = 0
-        multiplyParameters = 4;
+        multiplyParameters = 200;
         multiplication = 7; % how much do we have to scale the car and sensors
         maxSpeed
         minSpeed
@@ -49,7 +49,7 @@ classdef Car
         wheelsPose = 0;
         carLines
 
-        dt = 0.05;
+        dt = 0.001;
 
         sensorMaxRange = 20;
         sensorBeams = 10;
@@ -80,12 +80,10 @@ classdef Car
             obj.headingAngle = headingAngle;
             obj.sensorMode = sensorMode;
             obj.carPosition = [xPosition yPosition];
-            %
             obj = obj.updateCarBody();
             obj = obj.createWheels();
             obj = obj.updateSensor();
             obj = obj.processMap(map);
-
             [obj.sensorReadings, obj.cameraReadings] = obj.getSensorReadings();
         end
 
@@ -97,7 +95,7 @@ classdef Car
             obj.reverseSpeed = 5*multiplyParameters;
             obj.idleSlowDown = 5*multiplyParameters;
 
-            obj.sensorMaxRange = 20 * multiplication / 4;
+            obj.sensorMaxRange = 20 * multiplication / 3;
             obj.cameraMaxRange = 2 * multiplication / 4;
 
             obj.carWidth = 1.85*multiplication;
@@ -193,6 +191,8 @@ classdef Car
             obj.drawSensorReadings();
             obj.getCarOccupancy(1);
             hold off
+%             ylabel('Y [m x10]')
+%             xlabel('X [m x10]')
             set(gca,'YDir','reverse')
             %             xlim([0, 100])
             %             ylim([0, 100])
@@ -224,8 +224,8 @@ classdef Car
             centers = centers + obj.carCenter;
             angle = obj.headingAngle + obj.steerAngle;
             if ~isempty(obj.map)
-                 show(obj.map)
-%                 imshow(obj.mapObject.image);
+%                  show(obj.map)
+                imshow(obj.mapObject.image);
                 hold on
                 obj.mapObject.drawCheckpoints();
                 obj.mapObject.drawFinish();
