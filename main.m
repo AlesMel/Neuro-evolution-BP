@@ -6,10 +6,9 @@ clear
 %%
 figure('Position', [100, 100, 800, 500]);
 
-variant = 3;
+variant = 5;
 scale = 1;
-sensorMode = 1;
-%% 
+sensorMode = 2;
 
 path = "CIRCUITS\";
 switch variant
@@ -97,6 +96,23 @@ switch variant
                        133 133 165 165 133, 308 318 318 308 308;
                        205 215 205 195 205, 365 363 331 334 365;
                        245 255 255 245 245, 313 313 281 281 313;];
+    case 5
+        img = path+"bigMap4.png";
+        xCar = 207 * scale;
+        yCar = 30 * scale;
+        angle = -pi;
+        maxSteps = round(1000 * scale);
+        finish = [327   337   337   327   327, 336 336 368 368 336] / scale;
+        checkpoints = [ 184   184   152   152   184    57    67    67    57    57
+                        89    89   121   121    89   120   130   130   120   120
+                       127   137   137   127   127   209   209   177   177   209
+                       185   195   195   185   185   256   256   225   225   256
+                       257   267   267   257   257   209   209   177   177   209
+                       327   327   359   359   327   220   230   230   220   220
+                       257   247   247   257   257   273   273   305   305   273
+                       137   127   127   137   137   273   273   305   305   273
+                       127   137   137   127   127   336   336   368   368   336
+                       247   257   257   247   247   336   336   368   368   336];
 end
 
 map = Map(img, scale, checkpoints, finish, maxSteps);
@@ -126,7 +142,7 @@ space1 = space/5;
 space2 = space/50;
 space3 = space/500;
 
-gens = 199;
+gens = 999;
 
 fitParametersCount = 7;
 
@@ -275,10 +291,10 @@ end
 %%     
 clear xs ys;
 figure('Position', [100, 100, 800, 500]);
-img = path+"bigMap3.png";
-xCar = 206 * scale;
-yCar = 53 * scale;
-angle = pi/5;
+img = path+"bigMap5.png";
+xCar = 300 * scale;
+yCar = 50 * scale;
+angle = -pi;
 maxSteps = round(1000 * scale);
 finish = [330 340 340 330 330, 340 340 372 372 340] / scale;
 checkpoints = [220 230 230 220 220,  73 73 41 41 73;
@@ -297,7 +313,7 @@ checkpoints = [220 230 230 220 220,  73 73 41 41 73;
 testMap = Map(img, scale, checkpoints, finish, maxSteps);
 step = 0;
 
-popIndex = 2;
+popIndex = 1;
 geneIndex = 1;
 % load("NNCameraMap03Trained06Camera.mat");
 [nn, weights] = nn.convertWeights(popIndex, geneIndex);
@@ -331,4 +347,4 @@ set(gca, 'Ydir', 'reverse')
 %% 
 figure
 generations = 1:1:gens;
-plot(generations, nn.fitTrend.pop3)
+plot(generations, nn.fitTrend.pop1)

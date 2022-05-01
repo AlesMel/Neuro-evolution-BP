@@ -20,7 +20,7 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
 
         if map.checkFinish(pose) && chpNum == checkpointsReached
 %             fitFinish = -1e6;
-            fitFinish = -1e3;
+            fitFinish = -2e3;
             break;
         end
         [sensorReadings, cameraReadings] = car.getSensorReadings();
@@ -50,7 +50,7 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
                 checkpointsReached = checkpointsReached + 1;
             case 2 % reached wrong checkpoint
 %                 fit = fit + 0.5e2;
-                fitChpt = fitChpt + 0.5e2;
+%                 fitChpt = fitChpt + 0.5e2;
         end
 
         checkpointsRemaining = map.checkpointCount - checkpointsReached;
@@ -60,7 +60,9 @@ function [fit, checkpointsReached, fitSep] = fitness(nn, map, car, popIndex, gen
 %         car.drawCar();
 
         if currentPosition ~= 0
-            fitPose = fitPose + 0.5e4;
+%             fitPose = fitPose + 0.5e4;
+           fitPose = fitPose + 1e3;
+%            break;
 %             fitPose = fitPose + 1e3;   
 %             break;
         end

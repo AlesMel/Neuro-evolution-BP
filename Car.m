@@ -92,7 +92,7 @@ classdef Car
             obj.minSpeed = -5*multiplyParameters;
             obj.acceleration = 2*multiplyParameters;
             obj.brakeSpeed = 5*multiplyParameters;
-            obj.reverseSpeed = 5*multiplyParameters;
+            obj.reverseSpeed = 2*multiplyParameters;
             obj.idleSlowDown = 5*multiplyParameters;
 
             obj.sensorMaxRange = 20 * multiplication / 3;
@@ -224,8 +224,8 @@ classdef Car
             centers = centers + obj.carCenter;
             angle = obj.headingAngle + obj.steerAngle;
             if ~isempty(obj.map)
-%                  show(obj.map)
-                imshow(obj.mapObject.image);
+                 show(obj.map)
+%                 imshow(obj.mapObject.image);
                 hold on
                 obj.mapObject.drawCheckpoints();
                 obj.mapObject.drawFinish();
