@@ -1,0 +1,67 @@
+l = load("NNMap05TrainedRadarWithFitSeps.mat").nn;
+gens = 1:1:length(l.fitsSep.pop1(:,1));
+close all;
+%% 
+pop = "pop1";
+figure("Name", "Populacia č. 1")
+subplot(2,1, 1)
+plot(gens, l.fitsSep.(pop)(:,1), 'LineWidth', 2)
+hold on
+plot(gens, l.fitsSep.(pop)(:,2), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,3), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,4), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,5), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,6), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Jednotlivé zložky fitness")
+legend("Pose", "Steps", "Chpts", "Finish", "Inside", "Fitness", 'orientation', 'horizontal', 'location', 'southoutside')
+grid on
+hold off
+ylim([-3000 15000])
+yticks(-3000:4500:15000)
+subplot(2,1,2)
+plot(gens, l.fitsSep.(pop)(:,7), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Dosiahnuté checkpointy")
+grid on
+
+%% 
+pop = "pop2";
+figure("Name", "Populacia č. 2")
+subplot(2,1, 1)
+plot(gens, l.fitsSep.(pop)(:,1), 'LineWidth', 2)
+hold on
+plot(gens, l.fitsSep.(pop)(:,2), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,3), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,4), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,5), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,6), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Jednotlivé zložky fitness")
+legend("Pose", "Steps", "Chpts", "Finish", "Inside", "Fitness", 'orientation', 'horizontal', 'location', 'southoutside')
+grid on
+hold off
+ylim([-3000 15000])
+yticks(-3000:4500:15000)
+subplot(2,1,2)
+plot(gens, l.fitsSep.(pop)(:,7), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Dosiahnuté checkpointy")
+grid on
+%% 
+pop = "pop3";
+figure("Name", "Populacia č. 3")
+subplot(2,1, 1)
+plot(gens, l.fitsSep.(pop)(:,1), 'LineWidth', 2)
+hold on
+plot(gens, l.fitsSep.(pop)(:,2), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,3), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,4), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,5), 'LineWidth', 2)
+plot(gens, l.fitsSep.(pop)(:,6), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Jednotlivé zložky fitness")
+legend("Pose", "Steps", "Chpts", "Finish", "Inside", "Fitness", 'orientation', 'horizontal', 'location', 'southoutside')
+grid on
+hold off
+ylim([-3000 15000])
+yticks(-3000:4500:15000)
+subplot(2,1,2)
+plot(gens, l.fitsSep.(pop)(:,7), 'LineWidth', 2, 'Color', "#80C3FF")
+title("Dosiahnuté checkpointy")
+grid on

@@ -7,12 +7,12 @@ scale = 1;
 maxSteps = 1;
 finish = [311 311 343 343 311, 100 90 90 100 100] / scale;
 
-map = Map(img, scale, checkpoints, finish, maxSteps);
+map = Map(1);
 
 car = Car(70, 30, pi/4, map, 2);
 subplot(2,1,1)
 car.drawCar();
-subplot(2,1,2)
+subplot(2,1,2)  
 show(map.map)
 set(gca, 'Ydir', 'reverse')
 

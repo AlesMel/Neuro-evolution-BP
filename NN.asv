@@ -162,13 +162,6 @@ classdef NN
             obj.fitTrend.(popString)(gen, 1) = fit;
         end
 
-             % insert separate fitness funcitons to know, what for did the car
-        % get a penalty or reward and how much
-        function obj = fitSepInsert(obj, popIndex, gen, fit)
-            popString = sprintf('pop%d', popIndex);            
-            obj.fitsSep.(popString)(gen, :) = fit;
-        end
-
         function [obj, pop] = warmPop(obj, popIndex, alpha)
             popString = sprintf('pop%d', popIndex);
             pop = (2 * rand(obj.populationSizes(popIndex), obj.spaceLength) - 1) * alpha + ones(obj.populationSizes(popIndex), obj.spaceLength);

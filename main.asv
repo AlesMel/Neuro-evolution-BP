@@ -8,7 +8,7 @@ figure('Position', [100, 100, 800, 500]);
 
 variant = 5;
 scale = 1;
-sensorMode = 3;
+sensorMode = 2;
 
 map = Map(variant);
 car = Car(map.startX, map.startY, map.startAngle, map, sensorMode);
@@ -201,10 +201,10 @@ figure('Position', [100, 100, 800, 500]);
 testVariant = 4;
 testMap = Map(testVariant);
 step = 0;
-sensorMode = 3;
-popIndex = 2;
-geneIndex = 2;
-testNN = load("NNMap05TrainedFusionWithFitSeps02.mat").nn;
+sensorMode = 1;
+popIndex = 1;
+geneIndex = 1;
+testNN = load("NNMap05TrainedRadarWithFitseps.mat").nn;
 % testNN = nn;
 [testNN, weights] = testNN.convertWeights(popIndex, geneIndex);
 
@@ -213,7 +213,7 @@ car.drawCar()
 
 speeds = zeros(testMap.maxSteps, 1);
 
-while ~testMap.checkFinish(car.carPosition)
+while step < testMap.maxSteps && ~testMap.checkFinish(car.carPosition)
     [sensorReadings, cameraReadings] = car.getSensorReadings();
     switch car.sensorMode
         case 1
@@ -233,13 +233,19 @@ while ~testMap.checkFinish(car.carPosition)
 end 
 
 % imshow(testMap.image)
-%% 
 
 car.drawCar();
 hold on
 plot(xs(:), ys(:), 'X', 'Color', '#80c3ff');
 set(gca, 'Ydir', 'reverse')
 hold off
+%% 
+subplot(1,2,1)
+hold on
+imshow(testMap.image)
+set(gca, 'Ydir', 'reverse')
+subplot(1,2,2)
+plot(xxs(:), yys(:), 'X', 'Color', '#80c3ff');
 
 %% 
 figure

@@ -24,8 +24,11 @@ classdef Map
     methods
         function obj = Map(variant)
             obj = obj.getMapProperties(variant);
+            obj = obj.processImage(image);
+            obj = obj.rescaleMap(scale);
+            obj = obj.insertCheckpoints(checkpoints);
+            obj = obj.insertFinish(finish);
         end
-
         function obj = getMapProperties(obj, variant)
             scale = 1;
             path = "CIRCUITS\";
@@ -76,7 +79,7 @@ classdef Map
                     obj.startX = 70 * scale;
                     obj.startY = 30 * scale;
                     obj.startAngle = 0;
-                    obj.maxSteps = round(700 * scale);
+                    maxSteps = round(700 * scale);
                     finish = [311 311 343 343 311, 100 90 90 100 100] / scale;
                     checkpoints = [120 130 130 120 120, 46 46 14 14 46;
                                    180 190 190 180 180, 46 46 14 14 46;
@@ -95,25 +98,24 @@ classdef Map
                                    311 311 343 343 311, 158 148 148 158 158;];
                 case 4
                     img = path+"bigMap3.png";
-                    obj.startX = 200 * scale;
+                    obj.startX = 190 * scale;
                     obj.startY = 50 * scale;
-                    obj.startAngle = pi/3;
-                    obj.maxSteps = round(1000 * scale);
+                    obj.startAngle = pi/2;
+                    maxSteps = round(1000 * scale);
                     finish = [330 340 340 330 330, 340 340 372 372 340] / scale;
-                    checkpoints = [];  
-%                     checkpoints = [220 230 230 220 220,  73 73 41 41 73;
-%                                    237 237 269 269 237, 120 130 130 120 120;
-%                                    298 298 330 330 298, 190 200 200 190 190;
-%                                    248 238 238 248 248, 234 234 202 202 234;
-%                                    188 178 178 188 188, 234 234 202 202 234;
-%                                    117 117 149 149 117, 200 190 190 200 200;
-%                                    117 117 149 149 117, 140 130 130 140 140;
-%                                    69 69 101 101 69, 130 140 140 130 130;
-%                                    69 69 101 101 69, 190 200 200 190 190;
-%                                    69 69 101 101 69, 250 260 260 250 250;
-%                                    133 133 165 165 133, 308 318 318 308 308;
-%                                    205 215 205 195 205, 365 363 331 334 365;
-%                                    245 255 255 245 245, 313 313 281 281 313;];
+                    checkpoints = [220 230 230 220 220,  73 73 41 41 73;
+                                   237 237 269 269 237, 120 130 130 120 120;
+                                   298 298 330 330 298, 190 200 200 190 190;
+                                   248 238 238 248 248, 234 234 202 202 234;
+                                   188 178 178 188 188, 234 234 202 202 234;
+                                   117 117 149 149 117, 200 190 190 200 200;
+                                   117 117 149 149 117, 140 130 130 140 140;
+                                   69 69 101 101 69, 130 140 140 130 130;
+                                   69 69 101 101 69, 190 200 200 190 190;
+                                   69 69 101 101 69, 250 260 260 250 250;
+                                   133 133 165 165 133, 308 318 318 308 308;
+                                   205 215 205 195 205, 365 363 331 334 365;
+                                   245 255 255 245 245, 313 313 281 281 313;];
                 case 5
                     img = path+"bigMap4.png";
                     obj.startX = 207 * scale;
@@ -131,23 +133,7 @@ classdef Map
                                    137   127   127   137   137   273   273   305   305   273
                                    127   137   137   127   127   336   336   368   368   336
                                    247   257   257   247   247   336   336   368   368   336];
-                case 6
-                    img = path+"bigMap5.png";
-                    obj.startX = 100 * scale;
-                    obj.startY = 290 * scale;
-                    obj.startAngle = 0;
-                    obj.maxSteps = round(1000 * scale);
-                    finish = [300 310 310 300 300, 33 33 65 65 33];
-                    checkpoints = [];
-
-                otherwise
-                    error("The selected map does not exist!");
             end
-
-            obj = obj.processImage(img);
-            obj = obj.rescaleMap(scale);
-            obj = obj.insertCheckpoints(checkpoints);
-            obj = obj.insertFinish(finish);
         end
 
         function obj = rescaleMap(obj, scale)
@@ -168,7 +154,7 @@ classdef Map
             for i = 1:obj.checkpointCount
                 obj.checkpointsEdges(i, :) = [obj.checkpoints(i, 1) obj.checkpoints(i,6) obj.checkpoints(i, 4) obj.checkpoints(i,9)];
                 fill(obj.checkpoints(i,1:5), obj.checkpoints(i, 6:end),'g', 'FaceAlpha', 0.2)
-                 plot([obj.checkpointsEdges(i,1) obj.checkpointsEdges(i,3)], [obj.checkpointsEdges(i,2) obj.checkpointsEdges(i,4)], 'Color', 'r' ,'LineWidth', 2)
+                 plot([obj.checkpointsEdges(i,1) obj.checkpointsEdges(i,3)], [obj.checkpointsEdges(i,2) obj.checkpointsEdges(i,4)], 'Color',[1 0 1, 0.5] ,'LineWidth', 2)
                 
             end
 
