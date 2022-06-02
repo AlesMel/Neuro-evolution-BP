@@ -6,13 +6,12 @@ clear
 %%
 figure('Position', [100, 100, 800, 500]);
 
-variant = 5;
-scale = 1;
-sensorMode = 2;
-
-map = Map(variant);
+variant = 5; % vyber variantu mapy [3, 5] -> mapy určené pre testovanie
+sensorMode = 3; % vyber modu senzoru 1 -> radar, 2 -> kamera, 3 -> fúzia
+map = Map(variant); 
 car = Car(map.startX, map.startY, map.startAngle, map, sensorMode);
 
+% podla typu senzoru zvolime architektúru NS
 switch sensorMode
     case 1
         nn = NN([100 100 45], [10 6 6 2], 2);
@@ -21,8 +20,9 @@ switch sensorMode
     case 3
         nn = NN([100 100 45], [20 10 10 2], 2);
 end    
-car.drawCar();
-%% 
+
+car.drawCar(1);
+%%  Pred-inicializacia matíc -> ušetrenie rýchlosti
 fit1 = nn.fits.fit1;
 fit2 = nn.fits.fit2;
 fit3 = nn.fits.fit3;
@@ -58,6 +58,7 @@ fitS3 = zeros(gens, fitParametersCount);
 fitTrend1 = zeros(gens, 1);
 fitTrend2 = zeros(gens, 1);
 fitTrend3 = zeros(gens, 1);
+%% Genetický algoritmus
 
 for i = 1:gens
     dFit1 = fit1 - fitPrev1;
@@ -81,7 +82,7 @@ for i = 1:gens
     end
 
     nn.fits.fit1 = fit1;
-
+    % 1. ostrov - Genetické operácie
     best_1 = selbest(pop1, fit1, [1, 1]);
     old_1 = selrand(pop1, fit1, 10);
     work1a_1 = seltourn(pop1, fit1, 10);
@@ -107,7 +108,7 @@ for i = 1:gens
 
     pop1 = [best_1; work1_1; work2_1; work3_1; work4_1; old_1];
 
-     % GA - 2. Island - pop will be reset
+    % 2. ostrov - Genetické operácie
     best_2 = selbest(pop2, fit2, [1, 1]);
     old_2 = selrand(pop2, fit2, 10);
     work1a_2 = seltourn(pop2, fit2, 10);
@@ -132,7 +133,7 @@ for i = 1:gens
     work4_2 = muta(work4_2, 0.15, space3, space);
     pop2 = [best_2; work1_2; work2_2; work3_2; work4_2; old_2];
 
-    % GA - 3. Island - the best ones
+    % 3. ostrov - Genetické operácie
     best_3 = selbest(pop3, fit3, [2, 1, 1, 1]);
     work_3 = selbest(pop3, fit3, [1,1,1,1,1,1,1,1,1,1]);
 
@@ -159,31 +160,25 @@ for i = 1:gens
         popb_1 = warmpopm(popb_1, 0.6); % zahreje 2. polovicu populacie 1
         pop1 = [popa_1; popb_1];
 
-        [nn, pop2] = nn.resetPop(2); % resetuje pop
+        [nn, pop2] = nn.resetPop(2); % reset druhého ostrova
     end
 
-%     maxCheckpointsReached1 = max(checkpointsReached1);
-%     maxCheckpointsReached2 = max(checkpointsReached2);
-%     maxCheckpointsReached3 = max(checkpointsReached3);
-
-    % insert fitness trend
+    % Vloženie fitness trendov
     nn = nn.fitTrendInsert(1, i, min(fit1));
     nn = nn.fitTrendInsert(2, i, min(fit2));
     nn = nn.fitTrendInsert(3, i, min(fit3));
 
-    % get the minimum fitness function (the best one) and agent index
+    % minimum fitness funkcie a indexy daným chromozómov
     [~, index] = min(fit1);
     [~, index2] = min(fit2);
     [~, index3] = min(fit3);
 
-%     fitS1(i, :) = fitS1temp(index, :);
-%     fitS2(i, :) = fitS2temp(index2, :);
-%     fitS3(i, :) = fitS3temp(index3, :);
-
+    % Vloženie separátnych fitness funckií - zložky
     nn = nn.fitSepInsert(1, i, fitS1temp(index, :));
     nn = nn.fitSepInsert(2, i, fitS2temp(index2, :));
     nn = nn.fitSepInsert(3, i, fitS3temp(index3, :));
 
+    % Vypísanie max. checkpointov, ktoré boli v danej generácií dosiahnuté
     maxCheckpointsReached1 = checkpointsReached1(index);
     maxCheckpointsReached2 = checkpointsReached2(index2);
     maxCheckpointsReached3 = checkpointsReached3(index3);
@@ -195,25 +190,24 @@ for i = 1:gens
 end
 
 
-%%     
+%% Testovanie
 clear xs ys;
 figure('Position', [100, 100, 800, 500]);
 testVariant = 4;
 testMap = Map(testVariant);
 step = 0;
-sensorMode = 1;
-popIndex = 1;
-geneIndex = 1;
-testNN = load("NNMap05TrainedRadarWithFitseps.mat").nn;
+sensorMode = 3;
+popIndex = 2;
+geneIndex = 2;
+testNN = load("NNMap05TrainedFusionWithFitSeps.mat").nn; 
 % testNN = nn;
 [testNN, weights] = testNN.convertWeights(popIndex, geneIndex);
-
 car = Car(testMap.startX, testMap.startY, testMap.startAngle, testMap, sensorMode);
-car.drawCar()
-
+car.drawCar(2)
+%% Simulácia vykreslenia
 speeds = zeros(testMap.maxSteps, 1);
 
-while step < testMap.maxSteps && ~testMap.checkFinish(car.carPosition)
+while ~testMap.checkFinish(car.carPosition)
     [sensorReadings, cameraReadings] = car.getSensorReadings();
     switch car.sensorMode
         case 1
@@ -224,7 +218,7 @@ while step < testMap.maxSteps && ~testMap.checkFinish(car.carPosition)
             [out] = testNN.evaluateOutput([sensorReadings, cameraReadings'], pi/4, weights, popIndex, geneIndex); % get output angle
     end
     car = car.update(out(1), out(2));
-    car.drawCar();
+    car.drawCar(2);
     pause(0.0001);
     step = step + 1;
     xs(step) = car.carPosition(1);
@@ -233,19 +227,13 @@ while step < testMap.maxSteps && ~testMap.checkFinish(car.carPosition)
 end 
 
 % imshow(testMap.image)
+%% 
 
 car.drawCar();
 hold on
 plot(xs(:), ys(:), 'X', 'Color', '#80c3ff');
 set(gca, 'Ydir', 'reverse')
 hold off
-%% 
-subplot(1,2,1)
-hold on
-imshow(testMap.image)
-set(gca, 'Ydir', 'reverse')
-subplot(1,2,2)
-plot(xxs(:), yys(:), 'X', 'Color', '#80c3ff');
 
 %% 
 figure

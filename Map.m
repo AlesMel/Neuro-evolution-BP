@@ -1,6 +1,7 @@
 classdef Map
-    %MAP Summary of this class goes here
-    %   Detailed explanation goes here
+    %   Trieda mapy, ktora sluzi na trenovanie ako aj testovanie
+    %   automobilu. Vstupnymi arugmentami je varianta mapy 3, 5 ->
+    %   trenovacie mapy, 4, 6 -> testovacie mapy
 
     properties
         image
@@ -30,47 +31,47 @@ classdef Map
             scale = 1;
             path = "CIRCUITS\";
             switch variant
-                case 1
-                    img = path+"O.png";
-                    obj.startX = 55 / scale;
-                    obj.startY = 70 / scale;
-                    obj.maxSteps = 250 * scale;
-                    obj.anlge = 0;
-                    finish = [47 49 49 47 47, 66 66 80 80 66] / scale;
-                    checkpoints = [[61 63 63 61 61] [66 66 80 80 66];
-                        [75 77 77 75 75] [66 66 80 80 66];
-                        [82 82 94 94 82] [64 62 62 64 64];
-                        [82 82 94 94 82] [50 52 52 50 50];
-                        [82 82 94 94 82] [36 38 38 36 36];
-                        [75 77 77 75 75] [18 18 32 32 18];
-                        [61 63 63 61 61] [18 18 32 32 18];
-                        [47 49 49 47 47] [18 18 32 32 18];
-                        [33 35 35 33 33] [18 18 32 32 18];
-                        [20 22 22 20 20] [18 18 34 34 18];
-                        [8 8 20 20 8]    [38 36 36 38 38];
-                        [8 8 20 20 8]    [52 50 50 52 52];
-                        [8 8 20 20 8]    [64 62 62 64 64];
-                        [22 24 24 22 22] [66 66 80 80 66];
-                        [34 36 36 34 34] [66 66 80 80 66]] / scale;
-                case 2
-                    %ZigZagRoad
-                    img = path+"ZigZagRoad.png";
-                    obj.startX = 12 * scale;
-                    obj.startY = 5 * scale;
-                    obj.startAngle = 0;
-                    obj.maxSteps = round(10000 * scale);
-                    finish = [148   156   156   148   148,   145   145   147   147   145] * scale;
-                    checkpoints =   [30	31	31	30	30	1	1	9	9	1;
-                                    42	42	50	50	42	21	22	22	21	21;
-                                    60	61	61	60	60	30	30	38	38	30;
-                                    85	86	86	85	85	30	30	38	38	30;
-                                    86	85	85	86	86	51	51	59	59	51;
-                                    61	61	69	69	61	63.5	64.5	64.5	63.5	63.5;
-                                    53.5	52.5	52.5	53.5	53.5	82	82	90	90	82;
-                                    42	42	50	50	42	110	111	111	110	110;
-                                    67.5	68.5	68.5	67.5	67.5	131	131	139	139	131;
-                                    95	96	96	95	95	113	113	121	121	113;
-                                    140	141	141	140	140	113	113	121	121	113]  * scale;
+%                 case 1
+%                     img = path+"O.png";
+%                     obj.startX = 55 / scale;
+%                     obj.startY = 70 / scale;
+%                     obj.maxSteps = 250 * scale;
+%                     obj.anlge = 0;
+%                     finish = [47 49 49 47 47, 66 66 80 80 66] / scale;
+%                     checkpoints = [[61 63 63 61 61] [66 66 80 80 66];
+%                         [75 77 77 75 75] [66 66 80 80 66];
+%                         [82 82 94 94 82] [64 62 62 64 64];
+%                         [82 82 94 94 82] [50 52 52 50 50];
+%                         [82 82 94 94 82] [36 38 38 36 36];
+%                         [75 77 77 75 75] [18 18 32 32 18];
+%                         [61 63 63 61 61] [18 18 32 32 18];
+%                         [47 49 49 47 47] [18 18 32 32 18];
+%                         [33 35 35 33 33] [18 18 32 32 18];
+%                         [20 22 22 20 20] [18 18 34 34 18];
+%                         [8 8 20 20 8]    [38 36 36 38 38];
+%                         [8 8 20 20 8]    [52 50 50 52 52];
+%                         [8 8 20 20 8]    [64 62 62 64 64];
+%                         [22 24 24 22 22] [66 66 80 80 66];
+%                         [34 36 36 34 34] [66 66 80 80 66]] / scale;
+%                 case 2
+%                     %ZigZagRoad
+%                     img = path+"ZigZagRoad.png";
+%                     obj.startX = 12 * scale;
+%                     obj.startY = 5 * scale;
+%                     obj.startAngle = 0;
+%                     obj.maxSteps = round(10000 * scale);
+%                     finish = [148   156   156   148   148,   145   145   147   147   145] * scale;
+%                     checkpoints =   [30	31	31	30	30	1	1	9	9	1;
+%                                     42	42	50	50	42	21	22	22	21	21;
+%                                     60	61	61	60	60	30	30	38	38	30;
+%                                     85	86	86	85	85	30	30	38	38	30;
+%                                     86	85	85	86	86	51	51	59	59	51;
+%                                     61	61	69	69	61	63.5	64.5	64.5	63.5	63.5;
+%                                     53.5	52.5	52.5	53.5	53.5	82	82	90	90	82;
+%                                     42	42	50	50	42	110	111	111	110	110;
+%                                     67.5	68.5	68.5	67.5	67.5	131	131	139	139	131;
+%                                     95	96	96	95	95	113	113	121	121	113;
+%                                     140	141	141	140	140	113	113	121	121	113]  * scale;
                 case 3
                     img = path+"bigMap.png";
                     obj.startX = 70 * scale;
@@ -149,14 +150,16 @@ classdef Map
             obj = obj.insertCheckpoints(checkpoints);
             obj = obj.insertFinish(finish);
         end
-
+        
+        % zvacsenie alebo zmensenie mapy
         function obj = rescaleMap(obj, scale)
             obj.image = imresize(obj.image, scale);
             map = imresize(obj.bwImage, scale);
             obj.mapSize = length(map);
             obj.map = createMap(map);
         end
-
+        
+        % Pridanie checkpointov
         function obj = insertCheckpoints(obj, checkpoints)
             if ~isempty(checkpoints)
                 obj.checkpoints = checkpoints;
@@ -164,28 +167,31 @@ classdef Map
             end
         end
 
+        % Vykreslenie checkpointov
         function drawCheckpoints(obj)
             for i = 1:obj.checkpointCount
                 obj.checkpointsEdges(i, :) = [obj.checkpoints(i, 1) obj.checkpoints(i,6) obj.checkpoints(i, 4) obj.checkpoints(i,9)];
                 fill(obj.checkpoints(i,1:5), obj.checkpoints(i, 6:end),'g', 'FaceAlpha', 0.2)
-                 plot([obj.checkpointsEdges(i,1) obj.checkpointsEdges(i,3)], [obj.checkpointsEdges(i,2) obj.checkpointsEdges(i,4)], 'Color', 'r' ,'LineWidth', 2)
-                
+                plot([obj.checkpointsEdges(i,1) obj.checkpointsEdges(i,3)], [obj.checkpointsEdges(i,2) obj.checkpointsEdges(i,4)], 'Color', 'r' ,'LineWidth', 2)
             end
 
         end
-
+        
+        % Vykreslenie ciela
         function drawFinish(obj)
             finishEdges(:) = [obj.finish(1, 1) obj.finish(1,6) obj.finish(1, 4) obj.finish(1,9)];
             fill(obj.finish(1, 1:5), obj.finish(1, 6:end),'b')
             plot([finishEdges(1,1) finishEdges(1,3)], [finishEdges(1,2) finishEdges(1,4)], 'r', 'LineWidth', 2)
         end
 
+        % Pridanie ciela
         function obj = insertFinish(obj, finish)
             if ~isempty(finish)
                 obj.finish = finish;
             end
         end
 
+        % Kontrola, ci objekt auta nabural alebo nie
         function occupancy = checkOccupancy(obj, car, pose) 
             occupancy = getOccupancy(obj.map, [pose(1), pose(2)]) || ...
             getOccupancy(obj.map, [pose(1)+car.carWidth/2, pose(2)]) || ...
@@ -193,8 +199,8 @@ classdef Map
             getOccupancy(obj.map, [pose(1)+car.carWidth/2, pose(2)-car.carLength])|| ...
             getOccupancy(obj.map, [pose(1)-car.carWidth/2, pose(2)-car.carLength]);
         end
-
-
+        
+        % Kontrola ci sme v ceily
         function finished = checkFinish(obj, pose)
             finished = 0;
 
@@ -207,7 +213,8 @@ classdef Map
                 finished = 1;
             end
         end
-
+        
+        % Kontrola ci sme vo vnutri mapy
         function inside = checkInside(obj, pose)
             inside = 0;
             if pose(1) >= obj.mapSize || pose(1) <= 0
@@ -218,6 +225,7 @@ classdef Map
             end
         end
 
+        % Kontrola ci sme presli checkpointom
         function [checkpointSol] = checkCheckpoints(obj, pose, checkpointsReached)
             PX = pose(1);
             PY = pose(2);
@@ -225,10 +233,10 @@ classdef Map
             finishLeft = 0;
 
             for chpt = 1:length(obj.checkpoints(:,1))
-                nextChpt = checkpointsReached + 1;
+                nextChpt = checkpointsReached + 1; % Nasledujuci checkpoint
 
                 if nextChpt <= obj.checkpointCount
-                    checkpoint = obj.checkpoints(chpt, :); % current checkpoint
+                    checkpoint = obj.checkpoints(chpt, :); % Aktualny checkpoint
                 elseif nextChpt == obj.checkpointCount + 1
                     checkpoint = obj.finish;
                     finishLeft = 1;
@@ -245,11 +253,12 @@ classdef Map
             end
         end
         
+        % Spracovanie obrazku mapy
         function obj = processImage(obj, image)
             obj.image = imread(image);
             grayImage = rgb2gray(obj.image);
             obj.bwImage = grayImage > 123;
-            obj.image = flip(obj.image, 1); % we need to flip because image does have a reversed y axis direction
+            obj.image = flip(obj.image, 1); %  Potrebujeme ich flipnut pretoze objekt Image ma reverznu y-ovu os
         end
 
     end

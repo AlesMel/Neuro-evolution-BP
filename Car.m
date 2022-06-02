@@ -1,6 +1,9 @@
 classdef Car
-    %Class that creates actor (Car)
-    %   Detailed explanation goes here
+    %   Objekt automobilu, ktory pouzivame na simulovanie prostredia. Ma
+    %   3 typy senzorov, kde prvy je radar, druha je kamera a tretia je
+    %   fuzia tychto senzorov. Vstupnymi argumentami su x-ova pozicia,
+    %   y-ova pozicia, smerovy uhol, mapa a senzorovy mod [1 -> radar, 2 ->
+    %   kamera, 3 -> fuzia]
     properties
         speed = 0
         multiplyParameters = 200;
@@ -51,14 +54,14 @@ classdef Car
 
         dt = 0.001;
 
-        sensorMaxRange = 20;
-        sensorBeams = 10;
-
-        sensorAngles = linspace(-pi/2, pi/2, 10)
-        sensorLines = zeros(10, 4)
-        sensorReadings
-
         sensorMode = 0;
+
+        radarMaxRange = 20;
+        radarRays = 10;
+
+        radarAngles = linspace(-pi/2, pi/2, 10)
+        radarLines = zeros(10, 4)
+        radarReadings
 
         camera
         cameraMaxRange;
@@ -84,9 +87,10 @@ classdef Car
             obj = obj.createWheels();
             obj = obj.updateSensor();
             obj = obj.processMap(map);
-            [obj.sensorReadings, obj.cameraReadings] = obj.getSensorReadings();
+            [obj.radarReadings, obj.cameraReadings] = obj.getSensorReadings();
         end
-
+        
+        % Zmena parametrov, pre lepsiu vizualizaciu
         function obj = resizeVars(obj, multiplyParameters, multiplication)
             obj.maxSpeed = 20*multiplyParameters;
             obj.minSpeed = -5*multiplyParameters;
@@ -95,7 +99,7 @@ classdef Car
             obj.reverseSpeed = 2*multiplyParameters;
             obj.idleSlowDown = 5*multiplyParameters;
 
-            obj.sensorMaxRange = 20 * multiplication / 3;
+            obj.radarMaxRange = 20 * multiplication / 3;
             obj.cameraMaxRange = 2 * multiplication / 4;
 
             obj.carWidth = 1.85*multiplication;
@@ -122,17 +126,18 @@ classdef Car
 
         end
 
+        % Aktualizacia automobilu
         function obj = update(obj, angle, forwardAmount)
             obj = obj.moveCar(angle);
-            if forwardAmount > 0
+            if forwardAmount > 0 % pridavanie
                 obj.speed = obj.speed + forwardAmount * obj.acceleration;
-            elseif forwardAmount < 0
+            elseif forwardAmount < 0 % spomalovanie
                 if obj.speed > 0
                     obj.speed = obj.speed + forwardAmount * obj.brakeSpeed;
                 else
                     obj.speed = obj.speed + forwardAmount * obj.reverseSpeed;
                 end
-            elseif forwardAmount == 0
+            elseif forwardAmount == 0 % samostatne brzdenie
                 if obj.speed > 0
                     obj.speed = obj.speed - obj.idleSlowDown;
                 end
@@ -140,10 +145,10 @@ classdef Car
                     obj.speed = obj.speed + obj.idleSlowDown;
                 end
             end
-
-            obj.speed = min(max(obj.speed, obj.minSpeed), obj.maxSpeed);
+            obj.speed = min(max(obj.speed, obj.minSpeed), obj.maxSpeed); % ohranicnie rychlosti
         end
 
+        % pohyb automobilu
         function obj = moveCar(obj, radians)
             obj.steerAngle = radians;
             obj = obj.createWheels();
@@ -152,13 +157,14 @@ classdef Car
             obj.headingAngle = atan2(obj.frontWheels(2) - obj.backWheels(2), obj.frontWheels(1) - obj.backWheels(1));
             obj = obj.updateCarBody();
             obj = obj.updateSensor();
-            [obj.sensorReadings, obj.cameraReadings] = obj.getSensorReadings();
+            [obj.radarReadings, obj.cameraReadings] = obj.getSensorReadings();
         end
-
-        function [obj] = drawCar(obj)
+        
+        % vykreslenie automobilu
+        function [obj] = drawCar(obj, mode)
             obj.carCenter(1) = obj.carPosition(1) - (obj.carLength/2) * cos(obj.headingAngle);
             obj.carCenter(2) = obj.carPosition(2) - (obj.carLength/2) * sin(obj.headingAngle);
-            obj = obj.drawWheels();
+            obj = obj.drawWheels(mode);
             obj = obj.drawFrontLights();
             obj.carLines = drawRectPart(obj.carCenter, obj.headingAngle, obj.carLength, obj.carWidth, '#D0D0D0', "k", 0);
             obj = obj.drawSensor();
@@ -173,6 +179,7 @@ classdef Car
             %             ylim([0, 100])
         end
 
+        % Aktualizacia skeletu automobilu
         function obj = updateCarBody(obj)
             % car properties
             x = obj.carPosition(1);
@@ -183,49 +190,59 @@ classdef Car
             obj.carBody = [x-w/2 y+l/2; x+w/2 y+l/2; x+w/2 y-l/2; x-w/2 y-l/2];
         end
 
+        % Vytvorenie koleis
         function obj = createWheels(obj)
             obj.frontWheels = obj.carPosition + obj.carWheelBase/2 * [cos(obj.headingAngle) sin(obj.headingAngle)];
             obj.backWheels = obj.carPosition - obj.carWheelBase/2 * [cos(obj.headingAngle) sin(obj.headingAngle)];
         end
 
+        % Pohyb kolies
         function obj = moveWheels(obj)
             obj.frontWheels = obj.frontWheels + obj.speed * obj.dt * [cos(obj.headingAngle + obj.steerAngle) sin(obj.headingAngle + obj.steerAngle)];
             obj.backWheels = obj.backWheels + obj.speed * obj.dt * [cos(obj.headingAngle) sin(obj.headingAngle)];
         end
-
-        function obj = drawWheels(obj)
+        
+        % Vykreslenie kolies
+        function obj = drawWheels(obj, mode)
             fillColor = '#000000';
-            % Left front wheel
+            % Lave predne koleso
             centers = rotate(obj.carWheelBase/2, obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             angle = obj.headingAngle + obj.steerAngle;
             if ~isempty(obj.map)
-%                 show(obj.map)
                 title("Mapa")
-                imshow(obj.mapObject.image);
+                switch mode % 1 => treningova mapa (BW), 2 => Obrazok
+                    case 1
+                        show(obj.map)
+                    case 2
+                        imshow(obj.mapObject.image);
+                    otherwise
+                        imshow(obj.mapObject.image);
+                end
                 hold on
                 obj.mapObject.drawCheckpoints();
                 obj.mapObject.drawFinish();
             end
             drawRectPart(centers, angle, obj.carWheelLength, obj.carWheelWidth, fillColor, "k", 0);
 
-            % Right front wheel
+            % Prave predne koleso
             centers = rotate(obj.carWheelBase/2, -obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             angle = obj.headingAngle + obj.steerAngle;
             drawRectPart(centers, angle, obj.carWheelLength, obj.carWheelWidth, fillColor, "k", 0);
-            % Left rear wheel
+            % Lave zadne koleso
             centers = rotate(-obj.carWheelBase/2, obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             angle = obj.headingAngle;
             drawRectPart(centers, angle, obj.carWheelLength, obj.carWheelWidth, fillColor, "k", 0);
-            % Right rear wheel
+            % Prave zadne koleso
             centers = rotate(-obj.carWheelBase/2, -obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             angle = obj.headingAngle;
             drawRectPart(centers, angle, obj.carWheelLength, obj.carWheelWidth, fillColor, "k", 0);
         end
 
+        % Vykreslenie komponentov automobilu
         function obj = drawCarComponents(obj)
             %             % roof
             %             centers = obj.car_center;
@@ -234,22 +251,22 @@ classdef Car
             fillColor = '#80C3FF';
 %             frameColor = [0.5020    0.5020    0.5020];
             frameColor = 'k';
-            % rear windshield
+            % zadne sklo
             centers = rotate(-obj.carLength/2+obj.carLength*0.1681, -obj.carWidth/2+obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carWindShieldLength, obj.carWindShieldWidth, fillColor, frameColor, 1);
 
-            % front windshield
+            % predne sklo
             centers = rotate(obj.carLength/2-obj.carLength*0.3151, -obj.carWidth/2+obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carWindShieldLength, obj.carWindShieldWidth, fillColor, frameColor, 2);
 
-            % right window
+            % prave okno
             centers = rotate(obj.carLength-obj.carLength*1.07, -obj.carWidth/2+obj.carWidth*0.1351, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carWindowLength, obj.carWindowWith, fillColor, frameColor, 3);
 
-            % left window
+            % lave okno
             centers = rotate(obj.carLength-obj.carLength*1.07, obj.carWidth/2-obj.carWidth*0.1351, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, -obj.carWindowLength, -obj.carWindowWith, fillColor, frameColor, 4);
@@ -259,7 +276,7 @@ classdef Car
             % %             centers = centers + obj.car_center;
             % %             draw_rectangle(centers, obj.heading_angle, -0.12, 0.5, 'k', 'k', 0);
 
-            % hood
+            % kapota
             centers = rotate(obj.carLength/2-obj.carLength*0.13, -obj.carWidth/2+obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carHoodLength, obj.carHoodMidWidth, fillColor, 'k', 0);
@@ -272,7 +289,7 @@ classdef Car
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carHoodLength, -obj.carHoodWidth, fillColor, 'k', 6);
 
-            % trunk
+            % kufor
             centers = rotate(obj.carLength*(-1/2+0.084),  -obj.carWidth/2+obj.carWidth/2, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, obj.carTrunkLength, obj.carTrunkWidth, 'k', 'k', 0);
@@ -286,19 +303,21 @@ classdef Car
             drawRectPart(centers, obj.headingAngle, obj.carTrunkLength, obj.carTrunkWidth, 'k', 'k', 0);
         end
 
+        % Vykreslenie prednych svetiel
         function obj = drawFrontLights(obj)
             frameColor = 'k';
-             % left lights
+             % Lave svetlo
             centers = rotate(obj.carLength/2-.06, obj.carWidth/2 - obj.carWidth*0.1892, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, -obj.carLightsLength, -obj.carLightsWidth, 'y', frameColor, 0);
 
-            % right lights
+            % Prave svetlo
             centers = rotate(obj.carLength/2-.06, -obj.carWidth/2 + obj.carWidth*0.1892, obj.headingAngle);
             centers = centers + obj.carCenter;
             drawRectPart(centers, obj.headingAngle, -obj.carLightsLength, obj.carLightsWidth, 'y', frameColor, 0);
         end
 
+        % Poloha automobilu -> Ci je automobil v stene alebo nie
         function occupancy = getCarOccupancy(obj, show)
             pose = obj.carPosition;
             % check the front points of the vehicle
@@ -328,6 +347,7 @@ classdef Car
 
         end
 
+        % Aktualizacia senzoru
         function obj = updateSensor(obj)
             switch obj.sensorMode
                 case 1
@@ -340,30 +360,35 @@ classdef Car
             end
         end
 
+        % Aktualizacia radaru
         function obj = updateRadarSensor(obj)
-            for i = 1:(obj.sensorBeams)
-                r_matrix = rotate(obj.sensorMaxRange * cos(obj.sensorAngles(i)), obj.sensorMaxRange * sin(obj.sensorAngles(i)), obj.headingAngle);
+            for i = 1:(obj.radarRays)
+                r_matrix = rotate(obj.radarMaxRange * cos(obj.radarAngles(i)), obj.radarMaxRange * sin(obj.radarAngles(i)), obj.headingAngle);
                 r_matrix = r_matrix + obj.carPosition;
-                obj.sensorLines(i,:) = [obj.carPosition(1,1) obj.carPosition(1,2), r_matrix(1) r_matrix(2)];
+                obj.radarLines(i,:) = [obj.carPosition(1,1) obj.carPosition(1,2), r_matrix(1) r_matrix(2)];
             end
         end
 
+        % Aktualizacia kamery
         function obj = updateCameraSensor(obj)
             r_matrix = rotate([0, obj.cameraMaxRange*7, obj.cameraMaxRange*10, obj.cameraMaxRange*7],[0, obj.cameraMaxRange, 0, -obj.cameraMaxRange] * obj.multiplication, obj.headingAngle);
             obj.camera = r_matrix + obj.carPosition;
         end
 
+        % Vykreslenie radarovych lucov
         function obj = drawRadar(obj)
-            for i = 1:(obj.sensorBeams)
-                line([obj.sensorLines(i,1) obj.sensorLines(i,3)], [obj.sensorLines(i,2) obj.sensorLines(i,4)], 'color', '#80C3FF')
+            for i = 1:(obj.radarRays)
+                line([obj.radarLines(i,1) obj.radarLines(i,3)], [obj.radarLines(i,2) obj.radarLines(i,4)], 'color', '#80C3FF')
             end
         end
 
+        % Vykreslenie kamery
         function obj = drawCamera(obj)
             cam = polyshape(obj.camera(:,1), obj.camera(:,2));
             plot(cam, 'FaceColor', '#D6D6D6' ,'FaceAlpha',0.6)
         end
 
+        % Vykreslenie senzoru
         function obj = drawSensor(obj)
             switch obj.sensorMode
                 case 1
@@ -377,21 +402,23 @@ classdef Car
             end
         end
 
-        function [sensorReadings, cameraReadings] = getSensorReadings(obj)
+        % Hodnoty zo senzorov
+        function [radarReadings, cameraReadings] = getSensorReadings(obj)
             cameraReadings = 0;
-            sensorReadings = 0;
+            radarReadings = 0;
             switch obj.sensorMode
                 case 1
-                    sensorReadings = obj.processRadarReadings();
+                    radarReadings = obj.processRadarReadings();
                 case 2
                     cameraReadings = obj.processCameraReadings();
                 case 3
-                    sensorReadings = obj.processRadarReadings();
+                    radarReadings = obj.processRadarReadings();
                     cameraReadings = obj.processCameraReadings();
                 case 4
             end
         end
 
+        % Odcitanie pozicie kamerovych bodov
         function [x, y] = getCameraReadings(obj)
             c = obj.camera;
             cam_points = [1/2*(1/2*(c(1,1) + c(2,1))+ c(1,1))     1/2*(1/2*(c(1,2) + c(2,2))+ c(1,2));
@@ -408,29 +435,32 @@ classdef Car
             y = cam_points(:,2);
         end
 
+        % Spracovanie radaru
         function sensor_readings = processRadarReadings(obj)
             if obj.checkInsidePosition([obj.carPosition obj.headingAngle])
-                sensor_positions = rayIntersection(obj.map, [obj.carPosition obj.headingAngle], obj.sensorAngles, obj.sensorMaxRange);
-                for i = 1:obj.sensorBeams
+                sensor_positions = rayIntersection(obj.map, [obj.carPosition obj.headingAngle], obj.radarAngles, obj.radarMaxRange);
+                for i = 1:obj.radarRays
                     x = sensor_positions(i,1);
                     y = sensor_positions(i,2);
 
                     if isnan(x) || isnan(y)
-                        sensor_readings(i) = obj.sensorMaxRange;
+                        sensor_readings(i) = obj.radarMaxRange;
                     else
                         sensor_readings(i) = sqrt((x-obj.carPosition(1))^2 + (y-obj.carPosition(2))^2);
                     end
                 end
             else
-                sensor_readings = zeros(obj.sensorBeams, 1);
+                sensor_readings = zeros(obj.radarRays, 1);
             end
         end
 
+        % Spracovanie kamery
         function camera_readings =  processCameraReadings(obj)
             [x, y] = obj.getCameraReadings();
             camera_readings = getOccupancy(obj.map, [x, y]);
         end
 
+        % Vykreslenie senzorovych bodov
         function obj = drawSensorReadings(obj)
             switch obj.sensorMode
                 case 1
@@ -444,18 +474,21 @@ classdef Car
             end
         end
 
+        % Vykreslenie bodov radaru
         function drawRadarReadings(obj)
             if obj.checkInsidePosition([obj.carPosition obj.headingAngle])
-                sensor_positions = rayIntersection(obj.map, [obj.carPosition obj.headingAngle], obj.sensorAngles, obj.sensorMaxRange);
+                sensor_positions = rayIntersection(obj.map, [obj.carPosition obj.headingAngle], obj.radarAngles, obj.radarMaxRange);
                 plot(sensor_positions(:,1), sensor_positions(:,2), '.', 'Color', '#bfe1ff', 'MarkerSize', 10)
             end
         end
 
+        % Vykreslenie bodov kamery
         function drawCameraReadings(obj)
             [x, y] = obj.getCameraReadings();
             plot(x, y, '.', 'Color', '#80c3ff', 'MarkerSize', 10)
         end
 
+        % Zistenie ci sme este stale na mape
         function result = checkInsidePosition(obj, pose)
             result = 1;
             if ~isempty(obj.map)
@@ -471,6 +504,7 @@ classdef Car
             end
         end
 
+        % Spracovanie mapy
         function obj = processMap(obj, map)
             if ~isempty(map)
                 obj.mapObject = map;
@@ -484,10 +518,12 @@ classdef Car
     end
 end
 
+% Vykreslenie casti, ktore su obdlznikoveho tvaru
 function rectLines = drawRectPart(center, angle, length, width, color, edgeColor, displayOption)
     x = center(1);
     y = center(2);
     
+    % displayOption sa pouziva pre vykreslenie komponentov automobilu
     if displayOption == 0
         x_car = [x   x+length   x+length   x         x];
         y_car = [y   y          y+width    y+width   y];
@@ -511,22 +547,25 @@ function rectLines = drawRectPart(center, angle, length, width, color, edgeColor
         y_car = [y   y          y+width    y+width   y];
     end
     
-    % 1. transform into coordinate system
+    % 1. transforacia do suradnicoveho systemu
     translated(1,:) = x_car - x;
     translated(2,:) = y_car - y;
     
-    % 2. now we rotate
+    % 2. rotacia
     rotated = rotate(translated(1,:), translated(2,:), angle)';
     
-    % 3. transform it back
+    % 3. spatna transformacia
     XY(1,:) = rotated(1,:) + x;
     XY(2,:) = rotated(2,:) + y;
     
+    % rotacia dlzky a sirky -> aby sme dostali body
     translated = rotate(length/2, width/2, angle);
     
     X = XY(1,:) - translated(1);
     Y = XY(2,:) - translated(2);
     
+    % ciary daneho stvorca su zlozene z tychto bodov - zacina v [x(i), y(i)] a
+    % konci v [x(i+1) y(i+1)]
     rectLines =   [X(1) Y(1) X(2) Y(2);
         X(2) Y(2) X(3) Y(3);
         X(3) Y(3) X(4) Y(4);
@@ -536,7 +575,7 @@ function rectLines = drawRectPart(center, angle, length, width, color, edgeColor
     set(rect, 'FaceColor', color, 'EdgeColor', edgeColor, 'LineWidth', 1);
 end
 
-
+% Rotacna matica, ktora rotuje v 2D body [x, y] podla uhla - angle
 function rotatedObject = rotate(x, y, angle)
     rotMatrix = [cos(angle) -sin(angle);
                 sin(angle) cos(angle)];

@@ -1,13 +1,12 @@
 classdef NN
-    %   NN class to create a neural network.
-    %   The input arguments are populations in form of a matrix
-    %   e.g. [100 100] meaning population 1, population 2,
-    %   number of neurons in each layer in form of a matrix
-    %   e.g. [1 10 10 1] meaning one input neuron 2 hidden layers
-    %   with 10 neurons in each layer and one output neuron and activation
-    %   function in form of a number representing 1 - Hyperbolic tangens
-    %   2 - Relu. Default activation function is hyperbolic tangens
-    %
+    %   NN trieda na vytvorenie neuronovej siete.
+    %   Vstupnymi arugmentami je populacia vo forme matice. Napriklad
+    %   matica [100 50] kde je prva populacia o velkosti 100 jedincov,
+    %   druha o velkosti 50 jedincov. 2. vstupnym argumentov je pocet
+    %   neuronov vo vrstvach, napriklad [1 10 10 1] kde je 1 vstupny neuron
+    %   10 skrytych neuronov, 10 skrytych neuronov a 1 vystupny neuron.
+    %   Tretim vstupnym argumentom je aktivacna funkcia: 1 - Hyperbolicky
+
     properties
         populationSizes = [];
         populations = struct;
@@ -45,16 +44,14 @@ classdef NN
             obj = obj.initializeWeights();
         end
 
+        % strucne vypisanie parametrov neuronovej siete
         function params = getParams(obj)
             params = struct('InputNeurons', obj.inputNeurons, 'HiddenLayer', obj.hiddenLayer, 'OutputNeurons', obj.outputNeurons, 'Weights', obj.weightsSizes);
         end
 
+        % priestor v ktorom pracujeme
         function obj = processSpace(obj, M1)
-            % M is an array of multiplications of searched space for
-            % mutations etc.
-            % M1 maximum def. oboru aktivacnej funkcie hyperbolicky tangens
-            % M2
-            % M3 maximum jedneho vystupu siete
+            % M je matica multiplikacie vyhladaveho priestoru
             obj = obj.calcSpaceLength();
             obj.space = [-M1 * ones(1, obj.spaceLength); M1 * ones(1, obj.spaceLength)];  % range
         end
@@ -63,6 +60,7 @@ classdef NN
             obj.activationFunction = activation;
         end
 
+        % premene vektora chromoyomu/jedinca na vahy
         function [obj, weights] = convertWeights(obj, popIndex, geneIndex)
             lastPosition = 1;
             popString = sprintf("pop%d", popIndex); % get population field
@@ -91,6 +89,7 @@ classdef NN
             end
         end
 
+        % aktualizacia vah
         function obj = updateWeights(obj, popIndex)
             for g = 1:obj.populationSizes(1,popIndex)
                 lastPosition = 1;
@@ -114,6 +113,7 @@ classdef NN
             end   
         end
 
+        % vyhodnotenie siete
         function out = evaluateOutput(obj, input, shifts, weights, popIndex, geneIndex)
             hiddenLayerLength = length(obj.hiddenLayer(1,:));
 
@@ -138,43 +138,47 @@ classdef NN
             end
         end
 
+        % aktualizacia fitness hodnoty danej populacie
         function obj = updateFit(obj, popIndex, newFit)
             fitString = sprintf('fit%d', popIndex);
             obj.fits.(fitString) = newFit;
         end
 
-   
-
+        % aktualizacia urcitej populacie
         function obj = updatePop(obj, popIndex, newPop)
             popString = sprintf('pop%d', popIndex);
             obj.populations.(popString) = newPop;
             obj = obj.updateWeights(popIndex);
         end
 
+        % zresetovanie populacie
         function [obj, pop] = resetPop(obj, popIndex)
             popString = sprintf('pop%d', popIndex);
             pop = zeros(obj.populationSizes(popIndex), obj.spaceLength);
             obj.populations.(popString) = pop;
         end
 
+        % vlozenie trendu fitness funkcie
         function [obj] = fitTrendInsert(obj, popIndex, gen, fit)
             popString = sprintf('pop%d', popIndex);            
             obj.fitTrend.(popString)(gen, 1) = fit;
         end
-
-             % insert separate fitness funcitons to know, what for did the car
-        % get a penalty or reward and how much
+        
+        % vlozenie separatnej fitness funkcie, kde dostaneme jednotlive
+        % zlozky
         function obj = fitSepInsert(obj, popIndex, gen, fit)
             popString = sprintf('pop%d', popIndex);            
             obj.fitsSep.(popString)(gen, :) = fit;
         end
 
+        % zahriatie populacie
         function [obj, pop] = warmPop(obj, popIndex, alpha)
             popString = sprintf('pop%d', popIndex);
             pop = (2 * rand(obj.populationSizes(popIndex), obj.spaceLength) - 1) * alpha + ones(obj.populationSizes(popIndex), obj.spaceLength);
             obj.populations.(popString) = pop;
         end
 
+        % vyber najlepsieho jedinca
         function obj = selectBest(obj, popIndex, size)
             popString = sprintf('pop%d', popIndex);
             fitString = sprintf('fit%d', popIndex);
@@ -188,37 +192,36 @@ classdef NN
     end
 
     methods (Access = private)
-        %         % Function to process the number of populations
-        %         function obj = processPopulations(obj, populations)
-        %         end
-
-        % Function to process the number of neurons in each layer
+        % spracovanie neuronov vo vrstvach
         function obj = processNeurons(obj, neurons)
             obj.inputNeurons = neurons(1,1);
             obj.hiddenLayer = neurons(1,2:end-1);
             obj.outputNeurons = neurons(1,end);
         end
 
+        % vypocitanie vah medzi neuronmi
         function obj = calcWeights(obj)
-            % Function to calculate the number of weights between layers.
             hLayerLength = length(obj.hiddenLayer(1,:));
             obj.weightsSizes = zeros(1, hLayerLength);
-            obj.weightsSizes(1, 1) = obj.inputNeurons * obj.hiddenLayer(1); % number of weigts between input layer and first hidden layer
+            obj.weightsSizes(1, 1) = obj.inputNeurons * obj.hiddenLayer(1); % pocet vah medzi vstupnou vrstvou a prvou skrytou vrstvou
 
             for n = 1:hLayerLength-1
-                obj.weightsSizes(n+1) = obj.hiddenLayer(n) * obj.hiddenLayer(n+1); % number of weights between n and (n+1) hidden layer
+                obj.weightsSizes(n+1) = obj.hiddenLayer(n) * obj.hiddenLayer(n+1); % pocet vah medzi n skrytou vrstvou a n+1 skrytou vrstvou
             end
-            obj.weightsSizes(1, end+1) = obj.hiddenLayer(1, end) * obj.outputNeurons; % number of weigts between output layer and last hidden layer
+            obj.weightsSizes(1, end+1) = obj.hiddenLayer(1, end) * obj.outputNeurons; % pocet vah medzi poslednou skrytou vrstvou a vystupnou vrstvou
         end
 
+        % vypocitanie dlzok biasov
         function obj = calcBiasesLength(obj)
             obj.biasesSizes = obj.hiddenLayer;
         end
 
+        % vypocitanie priestoru (celkovo vahy a biasy)
         function obj = calcSpaceLength(obj)
             obj.spaceLength = sum(obj.weightsSizes(1,:)) + sum(obj.biasesSizes(1,:));
         end
 
+        % inicializacie vah na prazdne vektory
         function obj = initializeWeights(obj)
             for i = 1:length(obj.populationSizes(1,:))
                 for g = 1:obj.populationSizes(1,i)
@@ -243,7 +246,8 @@ classdef NN
                 end
             end
         end
-
+        
+        % inicializacia populacie
         function obj = initializePopulations(obj, mode)
             for i = 1:length(obj.populationSizes(1, :))
                 string = sprintf("pop%d", i);
@@ -261,7 +265,8 @@ classdef NN
                 end
             end
         end
-
+    
+        % inicializacia fitness funkcie
         function obj = initializeFitnesses(obj)
             for i = 1:length(obj.populationSizes(1, :))
                 string = sprintf("fit%d", i);
