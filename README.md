@@ -57,7 +57,7 @@ While this project was primarily developed for academic purposes, contributions,
 
 ## License
 
-This project is licensed under the MIT License. For more details, see the [LICENSE](./LICENSE) file.
+This project is licensed under the MIT License. For more details, see the [LICENSE](https://github.com/AlesMel/Neuro-evolution-BP/blob/main/LICENSE.md) file.
 
 ---
 
